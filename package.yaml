@@ -1,0 +1,21 @@
+name: "ros_bridge"
+version: "0.1.0"
+description: "ROS Bridge packages"
+maintainers:
+  - name: "fins"
+    email: "fins@sjtu.edu.cn"
+depends:
+  rclcpp: "system"
+  std_msgs: "system"
+  sensor_msgs: "system"
+  geometry_msgs: "system"
+  nav_msgs: "system"
+  visualization_msgs: "system"
+  tf2_ros: "system"
+  tf2_geometry_msgs: "system"
+
+  livox_ros_driver2: "system"
+  cv_bridge: "system"
+  pcl_conversions: "system"
+licenses:
+  - "MIT"
