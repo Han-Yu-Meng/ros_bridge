@@ -98,7 +98,7 @@ private:
         t.child_frame_id = to_frame_;
 
         tf2::Quaternion q;
-        q.setRPY(r_, p_, y_);
+        q.setRPY(r_ * M_PI / 180.0, p_ * M_PI / 180.0, y_ * M_PI / 180.0);
 
         t.transform.translation.x = tx_;
         t.transform.translation.y = ty_;
