@@ -23,7 +23,7 @@ class TransformWXYZ : public fins::Node {
 public:
   void define() override {
     set_basics("TransformWXYZ", "Generates TransformStamped from Quaternion parameters at 50Hz.", "ROS>Transform");
-    register_output<0, geometry_msgs::msg::TransformStamped>("transform");
+    register_output<geometry_msgs::msg::TransformStamped>("transform");
 
     register_parameter<double>("tx", &TransformWXYZ::set_tx, 0.0);
     register_parameter<double>("ty", &TransformWXYZ::set_ty, 0.0);
@@ -39,7 +39,6 @@ public:
   void initialize() override {
     ROSContext::get_instance().init();
     is_running_ = false;
-    node_ = rclcpp::Node::make_shared("transform_wxyz_node");
   }
 
   void run() override {
@@ -97,8 +96,13 @@ private:
     while (is_running_) {
       geometry_msgs::msg::TransformStamped t;
       {
+        auto node = ROSContext::get_instance().get_node();
         std::lock_guard<std::mutex> lock(mutex_);
-        t.header.stamp = node_->now();
+        if (node) {
+          t.header.stamp = node->now();
+        } else {
+          t.header.stamp = rclcpp::Clock().now();
+        }
         t.header.frame_id = from_frame_;
         t.child_frame_id = to_frame_;
 
@@ -110,7 +114,7 @@ private:
         t.transform.rotation.z = qz_;
         t.transform.rotation.w = qw_;
       }
-      send<0>(t, fins::now());
+      send("transform", t, fins::now());
       std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
   }
@@ -121,7 +125,6 @@ private:
   std::string from_frame_ = "map";
   std::string to_frame_ = "base_link";
 
-  rclcpp::Node::SharedPtr node_;
   std::atomic<bool> is_running_{false};
   std::thread worker_;
 };

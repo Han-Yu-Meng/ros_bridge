@@ -24,12 +24,15 @@ public:
   }
 
   void initialize() override {
+    ROSContext::get_instance().init();
     is_published_ = false;
-    std::stringstream ss;
-    ss << "finevision_static_tf_broadcaster_" << static_cast<const void *>(this) << "_"
-       << std::chrono::steady_clock::now().time_since_epoch().count();
-    node_ = rclcpp::Node::make_shared(ss.str());
-    broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node_);
+
+    auto node = ROSContext::get_instance().get_node();
+    if (!node) {
+      logger->error("Failed to get ROS node for static broadcaster!");
+      return;
+    }
+    broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node);
   }
 
   void run() override {}
@@ -50,7 +53,6 @@ public:
   }
 
 private:
-  rclcpp::Node::SharedPtr node_;
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> broadcaster_;
   bool is_published_ = false;
 };

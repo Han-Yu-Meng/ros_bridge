@@ -23,22 +23,27 @@ public:
     set_description("Looks up TF transforms between frames at 50Hz.");
     set_category("ROS>Transform");
 
-    register_output<0, geometry_msgs::msg::TransformStamped>("transform");
+    register_output<geometry_msgs::msg::TransformStamped>("transform");
 
     register_parameter<std::string>("from_frame", &LookupTransform::set_from_frame, "map");
     register_parameter<std::string>("to_frame", &LookupTransform::set_to_frame, "base_link");
+
     register_parameter<int>("timeout_ms", &LookupTransform::set_timeout, 100);
     register_parameter<double>("frequency", &LookupTransform::set_frequency, 50.0);
   }
 
   void initialize() override {
+    ROSContext::get_instance().init();
     is_running_ = false;
-    std::stringstream ss;
-    ss << "finevision_tf_lookup_" << static_cast<const void *>(this) << "_"
-       << std::chrono::steady_clock::now().time_since_epoch().count();
-    node_ = rclcpp::Node::make_shared(ss.str());
-    buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
-    listener_ = std::make_shared<tf2_ros::TransformListener>(*buffer_);
+
+    auto node = ROSContext::get_instance().get_node();
+    if (!node) {
+      logger->error("Failed to get ROS node for transform lookup!");
+      return;
+    }
+
+    buffer_ = std::make_shared<tf2_ros::Buffer>(node->get_clock());
+    listener_ = std::make_shared<tf2_ros::TransformListener>(*buffer_, node);
   }
 
   void run() override {
@@ -88,7 +93,7 @@ private:
       if (!from.empty() && !to.empty()) {
         try {
           auto tf = buffer_->lookupTransform(from, to, tf2::TimePointZero, tf2::durationFromSec(timeout / 1000.0));
-          send<0>(tf, fins::now());
+          send("transform", tf, fins::now());
         } catch (const tf2::TransformException &) {
         }
       }
@@ -101,7 +106,6 @@ private:
     }
   }
 
-  rclcpp::Node::SharedPtr node_;
   std::shared_ptr<tf2_ros::Buffer> buffer_;
   std::shared_ptr<tf2_ros::TransformListener> listener_;
 

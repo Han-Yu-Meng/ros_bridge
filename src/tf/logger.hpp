@@ -21,7 +21,7 @@ public:
     set_description("Logs TF transform messages using built-in logger.");
     set_category("ROS>Transform");
 
-    register_input<0, geometry_msgs::msg::TransformStamped>("transform", &TFLogger::on_transform);
+    register_input<geometry_msgs::msg::TransformStamped>("transform", &TFLogger::on_transform);
   }
 
   void initialize() override { logger->info("TFLogger initialized."); }

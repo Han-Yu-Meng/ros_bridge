@@ -27,7 +27,6 @@ public:
   void reset() override {
     topic_ = "";
     pub_.reset();
-    ros_node_.reset();
   }
 
   void receive_msg(const fins::Msg<ROSMsgT> &msg) {
@@ -48,15 +47,14 @@ protected:
     if (topic_.empty())
       return;
 
-    std::string node_name = "pub_" + std::to_string((uint64_t) this);
-    ros_node_ = rclcpp::Node::make_shared(node_name);
+    auto node = ROSContext::get_instance().get_node();
+    if (!node) return;
 
-    pub_ = ros_node_->create_publisher<ROSMsgT>(topic_, 10);
+    pub_ = node->create_publisher<ROSMsgT>(topic_, 10);
     logger->info("Publish to topic: {}", topic_);
   }
 
   std::string topic_;
-  rclcpp::Node::SharedPtr ros_node_;
   typename rclcpp::Publisher<ROSMsgT>::SharedPtr pub_;
 };
 
@@ -65,8 +63,8 @@ protected:
   public:                                                                            \
     void define() override {                                                         \
       set_basics(#ClassName, Desc, "ROS>Publisher");                                 \
-      register_input<0, ROSMsgT>("data", &ClassName::receive_msg);                   \
-      register_parameter<std::string>("ros_topic", &ClassName::set_topic, "/topic"); \
+      register_input<ROSMsgT>("msg", &ClassName::receive_msg);                   \
+      register_parameter<std::string>("topic", &ClassName::set_topic, "/topic"); \
     }                                                                                \
   };                                                                                 \
   EXPORT_NODE(ClassName)

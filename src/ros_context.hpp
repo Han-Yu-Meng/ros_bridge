@@ -23,23 +23,28 @@ public:
     if (!rclcpp::ok()) {
       rclcpp::init(argc, argv);
 
-      spinning_ = true;
       exec_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
+      node_ = rclcpp::Node::make_shared("fins_ros_bridge");
+      exec_->add_node(node_);
+
+      spinning_ = true;
       spin_thread_ = std::thread([this]() {
-        while (spinning_ && rclcpp::ok()) {
-          exec_->spin();
-        }
+        exec_->spin();
       });
     }
   }
 
+  rclcpp::Node::SharedPtr get_node() {
+    return node_;
+  }
+
   void add_node(rclcpp::Node::SharedPtr node) {
-    if (exec_)
+    if (exec_ && node != node_)
       exec_->add_node(node);
   }
 
   void remove_node(rclcpp::Node::SharedPtr node) {
-    if (exec_)
+    if (exec_ && node != node_)
       exec_->remove_node(node);
   }
 
@@ -59,4 +64,5 @@ private:
   bool spinning_ = false;
   std::thread spin_thread_;
   rclcpp::Executor::SharedPtr exec_;
+  rclcpp::Node::SharedPtr node_;
 };

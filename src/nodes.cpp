@@ -52,8 +52,8 @@ DEFINE_ROS_PUB_NODE(LivoxCustomMsgPublisher, livox_ros_driver2::msg::CustomMsg, 
 /* Define ROS Subscriber Nodes */
 
 DEFINE_ROS_SUB_NODE(PointCloudSubscriber, sensor_msgs::msg::PointCloud2, "Subscribes to PointCloud2")
-DEFINE_ROS_SENSOR_SUB_NODE(ImuSubscriber, sensor_msgs::msg::Imu, "Subscribes to IMU")
-DEFINE_ROS_SENSOR_SUB_NODE(OdometrySubscriber, nav_msgs::msg::Odometry, "Subscribes to Odometry")
+DEFINE_ROS_SUB_NODE(ImuSubscriber, sensor_msgs::msg::Imu, "Subscribes to IMU")
+DEFINE_ROS_SUB_NODE(OdometrySubscriber, nav_msgs::msg::Odometry, "Subscribes to Odometry")
 DEFINE_ROS_SUB_NODE(PoseStampedSubscriber, geometry_msgs::msg::PoseStamped, "Subscribes to PoseStamped")
 DEFINE_ROS_SUB_NODE(MarkerArraySubscriber, visualization_msgs::msg::MarkerArray, "Subscribes to MarkerArray")
 DEFINE_ROS_SUB_NODE(TransformStampedSubscriber, geometry_msgs::msg::TransformStamped, "Subscribes to TransformStamped")

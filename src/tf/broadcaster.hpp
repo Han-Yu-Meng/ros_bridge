@@ -31,12 +31,13 @@ public:
   void initialize() override {
     ROSContext::get_instance().init();
 
-    std::stringstream ss;
-    ss << "finevision_tf_" << static_cast<const void *>(this) << "_"
-       << std::chrono::steady_clock::now().time_since_epoch().count();
+    auto node = ROSContext::get_instance().get_node();
+    if (!node) {
+      logger->error("Failed to get ROS node!");
+      return;
+    }
 
-    node_ = rclcpp::Node::make_shared(ss.str());
-    broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(node_);
+    broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(node);
 
     logger->info("TFBroadcaster initialized with frames: {} -> {}", from_frame_, to_frame_);
   }
@@ -44,7 +45,6 @@ public:
   void run() override {}
   void pause() override {}
   void reset() override {
-    node_.reset();
     broadcaster_.reset();
   }
 
@@ -79,7 +79,6 @@ private:
   std::string from_frame_ = "NONE";
   std::string to_frame_ = "NONE";
   std::mutex mutex_;
-  rclcpp::Node::SharedPtr node_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> broadcaster_;
 };
 
