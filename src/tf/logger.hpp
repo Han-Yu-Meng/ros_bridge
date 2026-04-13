@@ -30,11 +30,7 @@ public:
   void pause() override {}
   void reset() override {}
 
-  void on_transform(const fins::Msg<geometry_msgs::msg::TransformStamped> &msg) {
-    if (!msg)
-      return;
-
-    const auto &tf = *msg;
+  void on_transform(const geometry_msgs::msg::TransformStamped &tf) {
     const auto &trans = tf.transform.translation;
     const auto &rot = tf.transform.rotation;
 

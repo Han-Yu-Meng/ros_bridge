@@ -48,11 +48,11 @@ public:
     broadcaster_.reset();
   }
 
-  void on_transform(const fins::Msg<geometry_msgs::msg::TransformStamped> &msg) {
-    if (!broadcaster_ || !msg)
+  void on_transform(const geometry_msgs::msg::TransformStamped &msg) {
+    if (!broadcaster_)
       return;
 
-    auto transform = *msg;
+    geometry_msgs::msg::TransformStamped transform = msg;
 
     {
       std::lock_guard<std::mutex> lock(mutex_);

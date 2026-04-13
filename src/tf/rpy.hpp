@@ -32,8 +32,9 @@ public:
     register_parameter<double>("roll", &TransformRPY::set_roll, 0.0);
     register_parameter<double>("pitch", &TransformRPY::set_pitch, 0.0);
     register_parameter<double>("yaw", &TransformRPY::set_yaw, 0.0);
+    
     register_parameter<std::string>("from_frame", &TransformRPY::set_from_frame, "map");
-    register_parameter<std::string>("to_frame", &TransformRPY::set_to_frame, "base_link");
+    register_parameter<std::string>("to_frame", &TransformRPY::set_to_frame, "odom");
   }
 
   void initialize() override {
@@ -113,7 +114,7 @@ private:
         t.transform.rotation.z = q.z();
         t.transform.rotation.w = q.w();
       }
-      send("transform", t, fins::now());
+      send("transform", t);
       std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
   }
@@ -122,7 +123,7 @@ private:
   double tx_ = 0, ty_ = 0, tz_ = 0;
   double r_ = 0, p_ = 0, y_ = 0;
   std::string from_frame_ = "map";
-  std::string to_frame_ = "base_link";
+  std::string to_frame_ = "odom";
 
   std::atomic<bool> is_running_{false};
   std::thread worker_;

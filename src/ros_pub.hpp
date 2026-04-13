@@ -29,9 +29,9 @@ public:
     pub_.reset();
   }
 
-  void receive_msg(const fins::Msg<ROSMsgT> &msg) {
-    if (pub_ && msg) {
-      pub_->publish(*msg);
+  void receive_msg(const ROSMsgT &msg) {
+    if (pub_) {
+      pub_->publish(msg);
     }
   }
 

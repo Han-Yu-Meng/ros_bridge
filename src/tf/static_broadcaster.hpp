@@ -43,10 +43,10 @@ public:
     is_published_ = false;
   }
 
-  void on_receive(const fins::Msg<geometry_msgs::msg::TransformStamped> &msg) {
+  void on_receive(const geometry_msgs::msg::TransformStamped &msg) {
     if (!is_published_) {
       if (broadcaster_) {
-        broadcaster_->sendTransform(*msg);
+        broadcaster_->sendTransform(msg);
         is_published_ = true;
       }
     }

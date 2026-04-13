@@ -93,8 +93,9 @@ private:
       if (!from.empty() && !to.empty()) {
         try {
           auto tf = buffer_->lookupTransform(from, to, tf2::TimePointZero, tf2::durationFromSec(timeout / 1000.0));
-          send("transform", tf, fins::now());
-        } catch (const tf2::TransformException &) {
+          send("transform", tf);
+        } catch (const tf2::TransformException &e) {
+          logger->warn("Failed to lookup transform from {} to {}: {}", from, to, e.what());
         }
       }
 
