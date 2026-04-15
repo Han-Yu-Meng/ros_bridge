@@ -31,7 +31,7 @@
 #endif
 
 REGISTER_PLUGIN_INIT({ ROSContext::get_instance().init(); })
-
+REGISTER_PLUGIN_DESTROY({ ROSContext::get_instance().shutdown(); })
 
 /* Define ROS Publisher Nodes */
 

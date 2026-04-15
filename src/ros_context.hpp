@@ -48,20 +48,30 @@ public:
       exec_->remove_node(node);
   }
 
-private:
-  ROSContext() = default;
-  ~ROSContext() {
-    if (spinning_) {
-      spinning_ = false;
-      if (exec_)
+  void shutdown() {
+    bool expected_spinning = true;
+    if (spinning_.compare_exchange_strong(expected_spinning, false)) {
+      if (exec_) {
         exec_->cancel();
-      if (spin_thread_.joinable())
-        spin_thread_.join();
+      }
+      if (spin_thread_.joinable()) {
+        if (std::this_thread::get_id() != spin_thread_.get_id()) {
+          spin_thread_.join();
+        } else {
+          spin_thread_.detach();
+        }
+      }
       rclcpp::shutdown();
     }
   }
 
-  bool spinning_ = false;
+private:
+  ROSContext() = default;
+  ~ROSContext() {
+    shutdown();
+  }
+
+  std::atomic<bool> spinning_{false};
   std::thread spin_thread_;
   rclcpp::Executor::SharedPtr exec_;
   rclcpp::Node::SharedPtr node_;
