@@ -14,7 +14,6 @@ depends:
   tf2_ros: "system"
   tf2_geometry_msgs: "system"
 
-  livox_ros_driver2: "system"
   cv_bridge: "system"
   pcl_conversions: "system"
 licenses:
