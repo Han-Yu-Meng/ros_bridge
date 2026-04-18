@@ -8,9 +8,11 @@
 
 #pragma once
 
+#include <atomic>
 #include <fins/node.hpp>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
+#include <mutex>
 #include "../ros_context.hpp"
 
 class StaticBroadcaster : public fins::Node {
@@ -26,6 +28,7 @@ public:
   void initialize() override {
     ROSContext::get_instance().init();
     is_published_ = false;
+    paused_.store(false);
 
     auto node = ROSContext::get_instance().get_node();
     if (!node) {
@@ -37,15 +40,24 @@ public:
 
   void run() override {}
 
-  void pause() override {}
+  void pause() override {
+    paused_.store(true);
+    std::lock_guard<std::mutex> lock(mutex_);
+    broadcaster_.reset();
+  }
 
   void reset() override {
+    pause();
     is_published_ = false;
   }
 
   void on_receive(const geometry_msgs::msg::TransformStamped &msg) {
+    if (paused_.load() || !ROSContext::get_instance().io_ready())
+      return;
+
+    std::lock_guard<std::mutex> lock(mutex_);
     if (!is_published_) {
-      if (broadcaster_) {
+      if (broadcaster_ && ROSContext::get_instance().io_ready()) {
         broadcaster_->sendTransform(msg);
         is_published_ = true;
       }
@@ -54,6 +66,8 @@ public:
 
 private:
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> broadcaster_;
+  std::atomic<bool> paused_{false};
+  std::mutex mutex_;
   bool is_published_ = false;
 };
 

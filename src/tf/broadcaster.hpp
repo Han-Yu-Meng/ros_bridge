@@ -10,6 +10,7 @@
 
 #include <fins/node.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
+#include <atomic>
 #include <mutex>
 #include <sstream>
 #include <tf2_ros/transform_broadcaster.h>
@@ -30,6 +31,7 @@ public:
 
   void initialize() override {
     ROSContext::get_instance().init();
+    paused_.store(false);
 
     auto node = ROSContext::get_instance().get_node();
     if (!node) {
@@ -43,26 +45,41 @@ public:
   }
 
   void run() override {}
-  void pause() override {}
-  void reset() override {
+  void pause() override {
+    paused_.store(true);
+    std::lock_guard<std::mutex> lock(mutex_);
     broadcaster_.reset();
   }
 
+  void reset() override {
+    pause();
+    from_frame_ = "NONE";
+    to_frame_ = "NONE";
+  }
+
   void on_transform(const geometry_msgs::msg::TransformStamped &msg) {
-    if (!broadcaster_)
+    if (paused_.load() || !ROSContext::get_instance().io_ready())
       return;
 
     geometry_msgs::msg::TransformStamped transform = msg;
+    tf2_ros::TransformBroadcaster *broadcaster = nullptr;
 
     {
       std::lock_guard<std::mutex> lock(mutex_);
+      if (!broadcaster_)
+        return;
+
       if (!from_frame_.empty() && from_frame_ != "NONE")
         transform.header.frame_id = from_frame_;
       if (!to_frame_.empty() && to_frame_ != "NONE")
         transform.child_frame_id = to_frame_;
+
+      broadcaster = broadcaster_.get();
     }
 
-    broadcaster_->sendTransform(transform);
+    if (broadcaster && ROSContext::get_instance().io_ready()) {
+      broadcaster->sendTransform(transform);
+    }
   }
 
   void set_from_frame(const std::string &frame) {
@@ -78,6 +95,7 @@ public:
 private:
   std::string from_frame_ = "NONE";
   std::string to_frame_ = "NONE";
+  std::atomic<bool> paused_{false};
   std::mutex mutex_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> broadcaster_;
 };

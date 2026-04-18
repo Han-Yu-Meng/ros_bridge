@@ -21,7 +21,9 @@ public:
 
   void init(int argc = 0, char **argv = nullptr) {
     if (!rclcpp::ok()) {
-      rclcpp::init(argc, argv);
+      shutting_down_.store(false);
+      rclcpp::InitOptions init_options;
+      rclcpp::init(argc, argv, init_options, rclcpp::SignalHandlerOptions::None);
 
       exec_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
       node_ = rclcpp::Node::make_shared("fins_ros_bridge");
@@ -32,6 +34,14 @@ public:
         exec_->spin();
       });
     }
+  }
+
+  bool io_ready() const {
+    return rclcpp::ok() && !shutting_down_.load();
+  }
+
+  bool is_shutting_down() const {
+    return shutting_down_.load();
   }
 
   rclcpp::Node::SharedPtr get_node() {
@@ -49,6 +59,8 @@ public:
   }
 
   void shutdown() {
+    shutting_down_.store(true);
+
     bool expected_spinning = true;
     if (spinning_.compare_exchange_strong(expected_spinning, false)) {
       if (exec_) {
@@ -61,7 +73,16 @@ public:
           spin_thread_.detach();
         }
       }
-      rclcpp::shutdown();
+
+      if (exec_ && node_) {
+        exec_->remove_node(node_);
+      }
+      node_.reset();
+      exec_.reset();
+
+      if (rclcpp::ok()) {
+        rclcpp::shutdown();
+      }
     }
   }
 
@@ -72,6 +93,7 @@ private:
   }
 
   std::atomic<bool> spinning_{false};
+  std::atomic<bool> shutting_down_{false};
   std::thread spin_thread_;
   rclcpp::Executor::SharedPtr exec_;
   rclcpp::Node::SharedPtr node_;

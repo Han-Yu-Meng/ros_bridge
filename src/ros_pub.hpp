@@ -8,7 +8,9 @@
 
 #pragma once
 
+#include <atomic>
 #include <fins/node.hpp>
+#include <mutex>
 #include <rclcpp/rclcpp.hpp>
 #include "ros_context.hpp"
 
@@ -19,32 +21,62 @@ public:
 
   void initialize() override {
     ROSContext::get_instance().init();
+    paused_.store(false);
     create_publisher();
   }
 
-  void run() override {}
-  void pause() override {}
-  void reset() override {
-    topic_ = "";
+  void run() override {
+    if (paused_.exchange(false)) {
+      create_publisher();
+    }
+  }
+
+  void pause() override {
+    paused_.store(true);
+    std::lock_guard<std::mutex> lock(state_mutex_);
     pub_.reset();
   }
 
+  void reset() override {
+    paused_.store(true);
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    pub_.reset();
+    topic_.clear();
+  }
+
   void receive_msg(const ROSMsgT &msg) {
-    if (pub_) {
-      pub_->publish(msg);
+    if (paused_.load() || !ROSContext::get_instance().io_ready())
+      return;
+
+    typename rclcpp::Publisher<ROSMsgT>::SharedPtr pub;
+    {
+      std::lock_guard<std::mutex> lock(state_mutex_);
+      pub = pub_;
+    }
+
+    if (pub && ROSContext::get_instance().io_ready()) {
+      pub->publish(msg);
     }
   }
 
   void set_topic(const std::string &topic) {
+    std::lock_guard<std::mutex> lock(state_mutex_);
     if (topic_ != topic) {
       topic_ = topic;
-      create_publisher();
+      if (!paused_.load()) {
+        create_publisher_locked();
+      }
     }
   }
 
 protected:
   void create_publisher() {
-    if (topic_.empty())
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    create_publisher_locked();
+  }
+
+  void create_publisher_locked() {
+    if (topic_.empty() || paused_.load() || !ROSContext::get_instance().io_ready())
       return;
 
     auto node = ROSContext::get_instance().get_node();
@@ -55,6 +87,8 @@ protected:
   }
 
   std::string topic_;
+  std::atomic<bool> paused_{false};
+  std::mutex state_mutex_;
   typename rclcpp::Publisher<ROSMsgT>::SharedPtr pub_;
 };
 

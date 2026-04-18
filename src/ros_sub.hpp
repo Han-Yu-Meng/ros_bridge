@@ -8,7 +8,9 @@
 
 #pragma once
 
+#include <atomic>
 #include <fins/node.hpp>
+#include <mutex>
 #include <rclcpp/rclcpp.hpp>
 #include "ros_context.hpp"
 
@@ -18,34 +20,56 @@ public:
 
   void initialize() override {
     ROSContext::get_instance().init();
+    paused_.store(false);
     create_subscriber();
   }
 
-  void run() override {}
-  void pause() override {}
+  void run() override {
+    if (paused_.exchange(false)) {
+      create_subscriber();
+    }
+  }
+
+  void pause() override {
+    paused_.store(true);
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    sub_.reset();
+  }
 
   void reset() override {
+    paused_.store(true);
+    std::lock_guard<std::mutex> lock(state_mutex_);
     sub_.reset();
-    topic_ = "";
+    topic_.clear();
   }
 
   void set_topic(const std::string &topic) {
+    std::lock_guard<std::mutex> lock(state_mutex_);
     if (topic_ != topic) {
       topic_ = topic;
-      create_subscriber();
+      if (!paused_.load()) {
+        create_subscriber_locked();
+      }
     }
   }
 
 protected:
   void create_subscriber() {
-    if (topic_.empty())
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    create_subscriber_locked();
+  }
+
+  void create_subscriber_locked() {
+    if (topic_.empty() || paused_.load() || !ROSContext::get_instance().io_ready())
       return;
 
     auto node = ROSContext::get_instance().get_node();
     if (!node) return;
 
     auto cb = [this](const typename ROSMsgT::SharedPtr msg) {
-      this->send_ptr("msg", msg, fins::now());
+      if (!paused_.load()) {
+        this->send_ptr("msg", msg, fins::now());
+      }
     };
 
     sub_ = node->create_subscription<ROSMsgT>(topic_, 10, cb);
@@ -54,6 +78,8 @@ protected:
   }
 
   std::string topic_;
+  std::atomic<bool> paused_{false};
+  std::mutex state_mutex_;
   typename rclcpp::Subscription<ROSMsgT>::SharedPtr sub_;
 };
 
