@@ -64,4 +64,4 @@ DEFINE_ROS_SUB_NODE(ImageSubscriber, sensor_msgs::msg::Image, "Subscribes to Ima
 DEFINE_ROS_SUB_NODE(LivoxCustomMsgSubscriber, livox_ros_driver2::msg::CustomMsg, "Subscribes to Livox CustomMsg")
 #endif
 
-DEFINE_PLUGIN_ENTRY()
+DEFINE_PLUGIN_ENTRY(fins::STATELESS)
