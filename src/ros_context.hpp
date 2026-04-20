@@ -23,7 +23,12 @@ public:
     if (!rclcpp::ok()) {
       shutting_down_.store(false);
       rclcpp::InitOptions init_options;
+      
+#if defined(ROS_FOXY) || defined(ROS_DASHING) || defined(ROS_ELOQUENT)
+      rclcpp::init(argc, argv, init_options);
+#else
       rclcpp::init(argc, argv, init_options, rclcpp::SignalHandlerOptions::None);
+#endif
 
       exec_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
       node_ = rclcpp::Node::make_shared("fins_ros_bridge");
