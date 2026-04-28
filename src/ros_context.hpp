@@ -30,12 +30,15 @@ public:
       rclcpp::init(argc, argv, init_options, rclcpp::SignalHandlerOptions::None);
 #endif
 
-      exec_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
+      rclcpp::ExecutorOptions options;
+      exec_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>(options, 4);
+
       node_ = rclcpp::Node::make_shared("fins_ros_bridge");
       exec_->add_node(node_);
 
       spinning_ = true;
       spin_thread_ = std::thread([this]() {
+        pthread_setname_np(pthread_self(), "ros_spin");
         exec_->spin();
       });
     }
