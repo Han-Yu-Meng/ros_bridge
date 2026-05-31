@@ -53,6 +53,46 @@ public:
     }
   }
 
+  void set_history(const std::string &history) {
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    if (history_ != history) {
+      history_ = history;
+      if (!paused_.load()) {
+        create_subscriber_locked();
+      }
+    }
+  }
+
+  void set_depth(int depth) {
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    if (depth_ != depth) {
+      depth_ = depth;
+      if (!paused_.load()) {
+        create_subscriber_locked();
+      }
+    }
+  }
+
+  void set_reliability(const std::string &reliability) {
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    if (reliability_ != reliability) {
+      reliability_ = reliability;
+      if (!paused_.load()) {
+        create_subscriber_locked();
+      }
+    }
+  }
+
+  void set_durability(const std::string &durability) {
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    if (durability_ != durability) {
+      durability_ = durability;
+      if (!paused_.load()) {
+        create_subscriber_locked();
+      }
+    }
+  }
+
 protected:
   void create_subscriber() {
     std::lock_guard<std::mutex> lock(state_mutex_);
@@ -72,12 +112,36 @@ protected:
       }
     };
 
-    sub_ = node->create_subscription<ROSMsgT>(topic_, 10, cb);
+    rclcpp::QoS qos(depth_);
+    if (history_ == "Keep All") {
+      qos.keep_all();
+    } else {
+      qos.keep_last(depth_);
+    }
 
-    logger->info("Subscribed to {}", topic_);
+    if (reliability_ == "Best Effort") {
+      qos.best_effort();
+    } else {
+      qos.reliable();
+    }
+
+    if (durability_ == "Transient Local") {
+      qos.transient_local();
+    } else {
+      qos.durability_volatile();
+    }
+
+    sub_ = node->create_subscription<ROSMsgT>(topic_, qos, cb);
+
+    logger->info("Subscribed to {} (QoS: history={}, depth={}, reliability={}, durability={})", 
+                 topic_, history_, depth_, reliability_, durability_);
   }
 
   std::string topic_;
+  std::string history_{"Keep Last"};
+  int depth_{10};
+  std::string reliability_{"Reliable"};
+  std::string durability_{"Volatile"};
   std::atomic<bool> paused_{false};
   std::mutex state_mutex_;
   typename rclcpp::Subscription<ROSMsgT>::SharedPtr sub_;
@@ -88,9 +152,16 @@ protected:
   public:                                                                      \
     void define() override {                                                   \
       set_basics(#ClassName, Desc, "ROS>Subscriber");                          \
-      register_output<ROSMsgT>("msg");                                     \
-      register_parameter<std::string>("topic", &ClassName::set_topic,      \
+      register_output<ROSMsgT>("msg");                                         \
+      register_parameter<std::string>("topic", &ClassName::set_topic,          \
                                       "/topic");                               \
+      register_parameter<std::string>("history", &ClassName::set_history,      \
+                                      "Keep Last");                            \
+      register_parameter<int>("depth", &ClassName::set_depth, 10);             \
+      register_parameter<std::string>("reliability",                           \
+                                      &ClassName::set_reliability, "Reliable"); \
+      register_parameter<std::string>("durability",                            \
+                                      &ClassName::set_durability, "Volatile");  \
     }                                                                          \
   };                                                                           \
   EXPORT_NODE(ClassName)

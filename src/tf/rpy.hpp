@@ -13,8 +13,16 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <mutex>
 #include <rclcpp/rclcpp.hpp>
+#if __has_include(<tf2/LinearMath/Quaternion.hpp>)
+#include <tf2/LinearMath/Quaternion.hpp>
+#else
 #include <tf2/LinearMath/Quaternion.h>
+#endif
+#if __has_include(<tf2/LinearMath/Transform.hpp>)
+#include <tf2/LinearMath/Transform.hpp>
+#else
 #include <tf2/LinearMath/Transform.h>
+#endif
 #if __has_include(<tf2_geometry_msgs/tf2_geometry_msgs.hpp>)
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #else
