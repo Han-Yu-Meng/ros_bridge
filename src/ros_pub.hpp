@@ -21,8 +21,7 @@ public:
 
   void initialize() override {
     ROSContext::get_instance().init();
-    paused_.store(false);
-    create_publisher();
+    paused_.store(true);
   }
 
   void run() override {
@@ -141,6 +140,7 @@ protected:
       qos.durability_volatile();
     }
 
+    pub_.reset();
     pub_ = node->create_publisher<ROSMsgT>(topic_, qos);
     logger->info("Publish to topic: {} (QoS: history={}, depth={}, reliability={}, durability={})", 
                  topic_, history_, depth_, reliability_, durability_);

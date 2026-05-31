@@ -20,8 +20,7 @@ public:
 
   void initialize() override {
     ROSContext::get_instance().init();
-    paused_.store(false);
-    create_subscriber();
+    paused_.store(true);
   }
 
   void run() override {
@@ -131,6 +130,7 @@ protected:
       qos.durability_volatile();
     }
 
+    sub_.reset();
     sub_ = node->create_subscription<ROSMsgT>(topic_, qos, cb);
 
     logger->info("Subscribed to {} (QoS: history={}, depth={}, reliability={}, durability={})", 
