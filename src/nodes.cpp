@@ -19,6 +19,9 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
+#include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/float64.hpp>
+#include <std_msgs/msg/string.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <nav_msgs/msg/path.hpp>
 #include <sensor_msgs/msg/imu.hpp>
@@ -45,6 +48,9 @@ DEFINE_ROS_PUB_NODE(TwistPublisher, geometry_msgs::msg::Twist, "Publishes Twist"
 DEFINE_ROS_PUB_NODE(ImuPublisher, sensor_msgs::msg::Imu, "Publishes IMU")
 DEFINE_ROS_PUB_NODE(OccupancyGridPublisher, nav_msgs::msg::OccupancyGrid, "Publishes OccupancyGrid")
 DEFINE_ROS_PUB_NODE(ImagePublisher, sensor_msgs::msg::Image, "Publishes Image")
+DEFINE_ROS_PUB_NODE(StringPublisher, std_msgs::msg::String, "Publishes String")
+DEFINE_ROS_PUB_NODE(BoolPublisher, std_msgs::msg::Bool, "Publishes Bool")
+DEFINE_ROS_PUB_NODE(Float64Publisher, std_msgs::msg::Float64, "Publishes Float64")
 #ifdef WITH_LIVOX_ROS_DRIVER2
 DEFINE_ROS_PUB_NODE(LivoxCustomMsgPublisher, livox_ros_driver2::msg::CustomMsg, "Publishes Livox CustomMsg")
 #endif
@@ -60,6 +66,9 @@ DEFINE_ROS_SUB_NODE(TransformStampedSubscriber, geometry_msgs::msg::TransformSta
 DEFINE_ROS_SUB_NODE(TwistSubscriber, geometry_msgs::msg::Twist, "Subscribes to Twist")
 DEFINE_ROS_SUB_NODE(OccupancyGridSubscriber, nav_msgs::msg::OccupancyGrid, "Subscribes to OccupancyGrid")
 DEFINE_ROS_SUB_NODE(ImageSubscriber, sensor_msgs::msg::Image, "Subscribes to Image")
+DEFINE_ROS_SUB_NODE(StringSubscriber, std_msgs::msg::String, "Subscribes to String")
+DEFINE_ROS_SUB_NODE(BoolSubscriber, std_msgs::msg::Bool, "Subscribes to Bool")
+DEFINE_ROS_SUB_NODE(Float64Subscriber, std_msgs::msg::Float64, "Subscribes to Float64")
 #ifdef WITH_LIVOX_ROS_DRIVER2
 DEFINE_ROS_SUB_NODE(LivoxCustomMsgSubscriber, livox_ros_driver2::msg::CustomMsg, "Subscribes to Livox CustomMsg")
 #endif
