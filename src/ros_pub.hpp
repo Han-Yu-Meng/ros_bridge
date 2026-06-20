@@ -33,13 +33,17 @@ public:
   void pause() override {
     paused_.store(true);
     std::lock_guard<std::mutex> lock(state_mutex_);
-    pub_.reset();
+    if (ROSContext::get_instance().io_ready()) {
+      pub_.reset();
+    }
   }
 
   void reset() override {
     paused_.store(true);
     std::lock_guard<std::mutex> lock(state_mutex_);
-    pub_.reset();
+    if (ROSContext::get_instance().io_ready()) {
+      pub_.reset();
+    }
     topic_.clear();
   }
 
