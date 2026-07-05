@@ -134,10 +134,15 @@ protected:
       qos.durability_volatile();
     }
 
-    sub_.reset();
-    sub_ = node->create_subscription<ROSMsgT>(topic_, qos, cb);
+    // Disable default QoS event callbacks to prevent SIGSEGV when
+    // the subscriber is destroyed while the executor processes
+    // incompatible QoS events for it.
+    rclcpp::SubscriptionOptions options;
+    options.use_default_callbacks = false;
 
-    logger->info("Subscribed to {} (QoS: history={}, depth={}, reliability={}, durability={})", 
+    sub_ = node->create_subscription<ROSMsgT>(topic_, qos, cb, options);
+
+    logger->info("Subscribed to {} (QoS: history={}, depth={}, reliability={}, durability={})",
                  topic_, history_, depth_, reliability_, durability_);
   }
 

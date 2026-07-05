@@ -144,9 +144,14 @@ protected:
       qos.durability_volatile();
     }
 
-    pub_.reset();
-    pub_ = node->create_publisher<ROSMsgT>(topic_, qos);
-    logger->info("Publish to topic: {} (QoS: history={}, depth={}, reliability={}, durability={})", 
+    // Disable default QoS event callbacks to prevent SIGSEGV when
+    // the publisher is destroyed while the executor processes
+    // incompatible QoS events for it.
+    rclcpp::PublisherOptions options;
+    options.use_default_callbacks = false;
+
+    pub_ = node->create_publisher<ROSMsgT>(topic_, qos, options);
+    logger->info("Publish to topic: {} (QoS: history={}, depth={}, reliability={}, durability={})",
                  topic_, history_, depth_, reliability_, durability_);
   }
 
