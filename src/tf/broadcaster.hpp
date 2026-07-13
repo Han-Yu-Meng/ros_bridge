@@ -21,8 +21,10 @@ public:
   TFBroadcaster() = default;
 
   void define() override {
-    set_basics("TFBroadcaster", "Broadcasts TF transforms to ROS2.", "ROS>Transform");
-
+    set_name("TFBroadcaster");
+    set_description("Broadcasts TF transforms to ROS2.");
+    set_category("ROS>Transform");
+    
     register_input<geometry_msgs::msg::TransformStamped>("transform", &TFBroadcaster::on_transform);
 
     register_parameter<std::string>("from_frame_override", &TFBroadcaster::set_from_frame, "NONE");

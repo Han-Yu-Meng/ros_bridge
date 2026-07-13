@@ -34,8 +34,10 @@
 class TransformRPY : public fins::Node {
 public:
   void define() override {
-    set_basics("TransformRPY", "Generates TransformStamped from RPY parameters at 50Hz.", "ROS>Transform");
-    
+    set_name("TransformRPY");
+    set_description("Generates TransformStamped from RPY parameters at 50Hz.");
+    set_category("ROS>Transform");
+
     register_output<geometry_msgs::msg::TransformStamped>("transform");
 
     register_parameter<double>("tx", &TransformRPY::set_tx, 0.0);

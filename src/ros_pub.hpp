@@ -169,7 +169,9 @@ protected:
   class ClassName : public ROSPubNode<ROSMsgT> {                                     \
   public:                                                                            \
     void define() override {                                                         \
-      set_basics(#ClassName, Desc, "ROS>Publisher");                                 \
+      set_name(#ClassName);                                                          \
+      set_description(Desc);                                                         \
+      set_category("ROS>Publisher");                                                 \
       register_input<ROSMsgT>("msg", &ClassName::receive_msg);                       \
       register_parameter<std::string>("topic", &ClassName::set_topic, "/topic");     \
       register_parameter<std::string>("history", &ClassName::set_history,            \

@@ -34,7 +34,10 @@
 class TransformWXYZ : public fins::Node {
 public:
   void define() override {
-    set_basics("TransformWXYZ", "Generates TransformStamped from Quaternion parameters at 50Hz.", "ROS>Transform");
+    set_name("TransformWXYZ");
+    set_description("Generates TransformStamped from Quaternion parameters at 50Hz.");
+    set_category("ROS>Transform");
+
     register_output<geometry_msgs::msg::TransformStamped>("transform");
 
     register_parameter<double>("tx", &TransformWXYZ::set_tx, 0.0);

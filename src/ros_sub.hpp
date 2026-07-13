@@ -160,7 +160,9 @@ protected:
   class ClassName : public ROSSubNode<ROSMsgT> {                               \
   public:                                                                      \
     void define() override {                                                   \
-      set_basics(#ClassName, Desc, "ROS>Subscriber");                          \
+      set_name(#ClassName);                                                    \
+      set_description(Desc);                                                   \
+      set_category("ROS>Subscriber");                                          \
       register_output<ROSMsgT>("msg");                                         \
       register_parameter<std::string>("topic", &ClassName::set_topic,          \
                                       "/topic");                               \
