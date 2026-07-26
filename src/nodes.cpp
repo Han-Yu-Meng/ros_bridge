@@ -17,6 +17,7 @@
 #include "tf/wxyz.hpp"
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <std_msgs/msg/bool.hpp>
@@ -42,6 +43,7 @@ DEFINE_ROS_PUB_NODE(PointCloudPublisher, sensor_msgs::msg::PointCloud2, "Publish
 DEFINE_ROS_PUB_NODE(OdometryPublisher, nav_msgs::msg::Odometry, "Publishes Odometry")
 DEFINE_ROS_PUB_NODE(PathPublisher, nav_msgs::msg::Path, "Publishes Path")
 DEFINE_ROS_PUB_NODE(PoseStampedPublisher, geometry_msgs::msg::PoseStamped, "Publishes PoseStamped")
+DEFINE_ROS_PUB_NODE(PoseWithCovarianceStampedPublisher, geometry_msgs::msg::PoseWithCovarianceStamped, "Publishes PoseWithCovarianceStamped")
 DEFINE_ROS_PUB_NODE(MarkerArrayPublisher, visualization_msgs::msg::MarkerArray, "Publishes Markers")
 DEFINE_ROS_PUB_NODE(TransformStampedPublisher, geometry_msgs::msg::TransformStamped, "Publishes TransformStamped")
 DEFINE_ROS_PUB_NODE(TwistPublisher, geometry_msgs::msg::Twist, "Publishes Twist")
@@ -61,6 +63,7 @@ DEFINE_ROS_SUB_NODE(PointCloudSubscriber, sensor_msgs::msg::PointCloud2, "Subscr
 DEFINE_ROS_SUB_NODE(ImuSubscriber, sensor_msgs::msg::Imu, "Subscribes to IMU")
 DEFINE_ROS_SUB_NODE(OdometrySubscriber, nav_msgs::msg::Odometry, "Subscribes to Odometry")
 DEFINE_ROS_SUB_NODE(PoseStampedSubscriber, geometry_msgs::msg::PoseStamped, "Subscribes to PoseStamped")
+DEFINE_ROS_SUB_NODE(PoseWithCovarianceStampedSubscriber, geometry_msgs::msg::PoseWithCovarianceStamped, "Subscribes to PoseWithCovarianceStamped")
 DEFINE_ROS_SUB_NODE(MarkerArraySubscriber, visualization_msgs::msg::MarkerArray, "Subscribes to MarkerArray")
 DEFINE_ROS_SUB_NODE(TransformStampedSubscriber, geometry_msgs::msg::TransformStamped, "Subscribes to TransformStamped")
 DEFINE_ROS_SUB_NODE(TwistSubscriber, geometry_msgs::msg::Twist, "Subscribes to Twist")
