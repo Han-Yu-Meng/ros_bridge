@@ -35,18 +35,24 @@ public:
   void initialize() override {
     ROSContext::get_instance().init();
     is_running_ = false;
+    initialized_ = false;
 
     auto node = ROSContext::get_instance().get_node();
     if (!node) {
-      logger->error("Failed to get ROS node for transform lookup!");
+      logger->error("Failed to get ROS node for transform lookup! LookupTransform will not run.");
       return;
     }
 
     buffer_ = std::make_shared<tf2_ros::Buffer>(node->get_clock());
     listener_ = std::make_shared<tf2_ros::TransformListener>(*buffer_, node);
+    initialized_ = true;
   }
 
   void run() override {
+    if (!initialized_) {
+      logger->warn("LookupTransform not initialized, skipping run.");
+      return;
+    }
     is_running_ = true;
     worker_ = std::thread(&LookupTransform::loop, this);
   }
@@ -78,6 +84,10 @@ public:
 
 private:
   void loop() {
+    if (!buffer_) {
+      logger->error("LookupTransform buffer is null, loop aborted.");
+      return;
+    }
     while (is_running_) {
       std::string from, to;
       int timeout;
@@ -118,6 +128,7 @@ private:
 
   std::thread worker_;
   std::atomic<bool> is_running_{false};
+  bool initialized_{false};
 };
 
 EXPORT_NODE(LookupTransform)
