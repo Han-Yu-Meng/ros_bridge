@@ -14,7 +14,6 @@ set(ROS_REQUIRED_PACKAGES
 )
 
 set(ROS_OPTIONAL_PACKAGES
-    livox_ros_driver2
     cv_bridge
     pcl_conversions
 )
@@ -27,3 +26,15 @@ fins_link_ros_dependencies(${PROJECT_NAME} ${ROS_REQUIRED_PACKAGES})
 foreach(_PKG ${ROS_OPTIONAL_PACKAGES})
     fins_optional_ros_dependency(${PROJECT_NAME} ${_PKG})
 endforeach()
+
+find_package(livox_ros_driver2 QUIET)
+if(livox_ros_driver2_FOUND)
+    message(STATUS ">> Optional Package 'livox_ros_driver2': FOUND. Enabling...")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE WITH_LIVOX_ROS_DRIVER2)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        livox_ros_driver2::livox_interfaces2__rosidl_generator_cpp
+        livox_ros_driver2::livox_interfaces2__rosidl_typesupport_cpp
+    )
+else()
+    message(STATUS ">> Optional Package 'livox_ros_driver2': NOT FOUND. Skipping.")
+endif()
