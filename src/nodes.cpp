@@ -31,7 +31,7 @@
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #ifdef WITH_LIVOX_ROS_DRIVER2
-#include <livox_ros_driver2/msg/custom_msg.hpp>
+#include "livox_compat.hpp"
 #endif
 
 REGISTER_PLUGIN_INIT({ ROSContext::get_instance().init(); })

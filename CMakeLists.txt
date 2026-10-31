@@ -31,9 +31,15 @@ find_package(livox_ros_driver2 QUIET)
 if(livox_ros_driver2_FOUND)
     message(STATUS ">> Optional Package 'livox_ros_driver2': FOUND. Enabling...")
     target_compile_definitions(${PROJECT_NAME} PRIVATE WITH_LIVOX_ROS_DRIVER2)
+    if(TARGET livox_ros_driver2::livox_interfaces2__rosidl_generator_cpp)
+        set(LIVOX_MSG_PREFIX livox_interfaces2)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE LIVOX_INTERFACES2)
+    else()
+        set(LIVOX_MSG_PREFIX livox_ros_driver2)
+    endif()
     target_link_libraries(${PROJECT_NAME} PRIVATE
-        livox_ros_driver2::livox_interfaces2__rosidl_generator_cpp
-        livox_ros_driver2::livox_interfaces2__rosidl_typesupport_cpp
+        livox_ros_driver2::${LIVOX_MSG_PREFIX}__rosidl_generator_cpp
+        livox_ros_driver2::${LIVOX_MSG_PREFIX}__rosidl_typesupport_cpp
     )
 else()
     message(STATUS ">> Optional Package 'livox_ros_driver2': NOT FOUND. Skipping.")
